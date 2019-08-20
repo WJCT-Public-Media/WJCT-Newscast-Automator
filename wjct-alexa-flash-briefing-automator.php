@@ -21,9 +21,9 @@
    {
        wp_add_dashboard_widget(
            'WJCT_Latest_Newscast_widget',         // Widget slug.
-                    'Latest Newscast',         // Title.
-                    'WJCT_Latest_Newscast_widget_function' // Display function.
-           );
+           'Latest Newscast',         // Title.
+           'WJCT_Latest_Newscast_widget_function' // Display function.
+      );
    }
    add_action('wp_dashboard_setup', 'WJCT_Latest_Newscast_add_dashboard_widget');
 
@@ -56,11 +56,10 @@
        // echo '<p>The most recent update was ' . $recentupdate . '</p>';
 
        if ($recentupdate != $lastupdate) {
-         echo "<p>The newcast was updated " . $recentupdate . ".<br/>A new flash briefing is being published now.</p>";
-         programmatically_create_post();
-       }
-       else {
-         echo "<p>The newscast was last updated " . $lastupdate . ".</p>";
+           echo "<p>The newcast was updated " . $recentupdate . ".<br/>A new flash briefing is being published now.</p>";
+           programmatically_create_post();
+       } else {
+           echo "<p>The newscast was last updated " . $lastupdate . ".</p>";
        }
 
        echo '</div>';
@@ -106,7 +105,7 @@ function programmatically_create_post()
     $title = 'Flash Briefing ' . date("m/d/Y H:i:s", $recenttimestamp);
 
     // 1605 is WJCT's 'News Flash' category id
-    $category_ids = array (1605);
+    $category_ids = array(1605);
 
     // This sets the content of the post to the embed link for the mp3.
     $post_content = '[embed]' . $mp3url . '[/embed]';
@@ -136,6 +135,3 @@ function programmatically_create_post()
         $post_id = -2;
     } // end if
 } // end programmatically_create_post
-
-// uncomment this to test:
-//add_filter('after_setup_theme', 'programmatically_create_post');
