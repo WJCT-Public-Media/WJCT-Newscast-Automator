@@ -13,4 +13,8 @@ The WJCT-Alexa-Flash-Briefing-Automator will create a new post on Wordpress ever
 
 With one action, two different platforms will receive the same content, with no additional labor from the news team.
 
-version 0.01 - Created dashboard widget to show latest newscast update DateTime in UTC format. 
+version 0.01 - Created dashboard widget to show latest newscast update DateTime in UTC format.
+
+version 0.02 - Updated dashboard widget to show latest newscast update DateTime in local timezone.
+
+ 
