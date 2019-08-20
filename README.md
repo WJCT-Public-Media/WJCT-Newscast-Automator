@@ -17,4 +17,4 @@ version 0.01 - Created dashboard widget to show latest newscast update DateTime 
 
 version 0.02 - Updated dashboard widget to show latest newscast update DateTime in local timezone.
 
- 
+version 0.03 - Added get_option and update_option to store latest newscast update DateTime in WP Options table.

@@ -28,6 +28,10 @@
    {
     echo '<div>';
 
+    // get the datetime when the newscast was last updated
+    $lastupdate = get_option( 'lastupdated' );
+    echo '<p>The last update was ' . $lastupdate . '</p>';
+
     // The URL of the MP3 file uploaded to NPR One.
     // Find the URL in https://stationconnect.org/stations/447 (replace 447 with your NPR station ID)
     $url = 'https://media.publicbroadcasting.net/wjct/newscast/newscast.mp3';
@@ -41,16 +45,21 @@
     echo '</p>';
     */
 
-    // Show just the header that we need, the last modified date/time
-    $lastupdated = substr($headers[7], 15, 29);
+    // Show just the header that we need, the modified date/time
+    $recentupdate = substr($headers[7], 15, 29);
     // convert string to Unix Timestamp
-    $lastupdated = strtotime($lastupdated);
+    $recentupdate = strtotime($recentupdate);
     // format timestamp and convert to local timezone
-    $lastupdated = date("m/d/Y H:i:s A T", $lastupdated);
+    $recentupdate = date("m/d/Y H:i:s A T", $recentupdate);
+
+    // store the most recent datetime the newscast was updated in the website database
+    update_option( 'lastupdated', $recentupdate );
 
     // $date = $date->format('m/d/Y H:i:s A T');
-    echo '<p>The newscast was last uploaded ';
-    echo $lastupdated;
+    echo '<p>The most recent update was ';
+    echo $recentupdate;
     echo '</p>';
     echo '</div>';
    }
+
+?>
