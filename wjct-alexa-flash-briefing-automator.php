@@ -30,7 +30,7 @@
 
    function WJCT_Latest_Newscast_widget_function()
    {
-      global $mp3url;
+       global $mp3url;
        echo '<div>';
 
        // get the datetime when the newscast was last updated
@@ -62,7 +62,6 @@
        echo $recentupdate;
        echo '</p>';
        echo '</div>';
-
    }
 
  /**
@@ -72,13 +71,19 @@
  * @returns -1 if the post was never created, -2 if a post with the same title exists, or the ID
  *          of the post if successful.
  *
- * credit: Tom McFarlin https://tommcfarlin.com/programmatically-create-a-post-in-wordpress/#code
+ * Credit: Tom McFarlin https://tommcfarlin.com/programmatically-create-a-post-in-wordpress/#code
  *
  */
 
 function programmatically_create_post()
 {
-  global $mp3url;
+    global $mp3url;
+
+    $headers = get_headers($mp3url);
+    // Show just the header that we need, the modified date/time
+    $recentlastmod = substr($headers[7], 15, 29);
+    // convert string to Unix Timestamp
+    $recenttimestamp = strtotime($recentlastmod);
 
     // Initialize the page ID to -1. This indicates no action has been taken.
     $post_id = -1;
@@ -87,23 +92,18 @@ function programmatically_create_post()
     // User ID 636 is the generic 'WJCT' User
     $author_id = 636;
 
-    // $slug = 'example-post';
     // set the slug to the Unix Timestamp
     $slug = $recenttimestamp;
 
     // $title = 'My Example Post';
-    // Set the title to the top of the hour
-//    $title = date("m/d/Y H:i:s", $recenttimestamp);
-    // $mp3url = 'testing one two three';
-    $title = $mp3url;
+    // Set the title to the most recent updated date time
+    $title = date("m/d/Y H:i:s", $recenttimestamp);
 
-    // 1605 is the 'News Flash' categoy
-    $categoried_id = '1605';
+    // 1605 is WJCT's 'News Flash' category id
+    $category_ids = array (1605);
 
     // This sets the content of the post to the embed link for the mp3.
     $post_content = '[embed]' . $mp3url . '[/embed]';
-    // $post_content = "[embed]https://media.publicbroadcasting.net/wjct/newscast/newscast.mp3[/embed]";
-
 
     // If the page doesn't already exist, then create it
     if (null == get_page_by_title($title)) {
@@ -112,21 +112,21 @@ function programmatically_create_post()
         $post_id = wp_insert_post(
             array(
                 'comment_status'	=>	'closed',
-                'ping_status'		=>	'closed',
-                'post_author'		=>	$author_id,
-                'post_content' => $post_content,
-                'post_name'		=>	$slug,
-                'post_title'		=>	$title,
-                'post_category' => $categoried_id,
-                'post_status'		=>	'publish',
-                'post_type'		=>	'post'
+                'ping_status'	=>	'closed',
+                'post_author'	=>	$author_id,
+                'post_content'	=>	$post_content,
+                'post_name'	=>	$slug,
+                'post_title'	=>	$title,
+                'post_category'	=>	$category_ids,
+                'post_status'	=>	'publish',
+                'post_type' =>	'post'
             )
         );
 
     // Otherwise, we'll stop
     } else {
 
-            // Arbitrarily use -2 to indicate that the page with the title already exists
+        // Arbitrarily use -2 to indicate that the page with the title already exists
         $post_id = -2;
     } // end if
 } // end programmatically_create_post
