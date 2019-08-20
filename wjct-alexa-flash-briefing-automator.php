@@ -3,7 +3,7 @@
    Plugin Name: WJCT Alexa Flash Briefing Automator
    Plugin URI: https://www.wjct.org
    description: A plugin that automatically updates the WJCT Alexa Flash Briefing when the NPR One newscast has been uploaded.
-   Version: 0.03
+   Version: 0.04
    Author: Ray Hollister
    Author URI: https://rayhollister.com
    License:
@@ -35,7 +35,6 @@
 
        // get the datetime when the newscast was last updated
        $lastupdate = get_option('lastupdated');
-       echo '<p>The last update was ' . $lastupdate . '</p>';
 
        $headers = get_headers($mp3url);
 
@@ -51,17 +50,24 @@
        // convert string to Unix Timestamp
        $recenttimestamp = strtotime($recentlastmod);
        // format timestamp and convert to local timezone
-       $recentupdate = date("m/d/Y H:i:s A T", $recenttimestamp);
+       $recentupdate = date("m/d/Y h:i:s A T", $recenttimestamp);
 
+       // echo '<p>The last update was ' . $lastupdate . '</p>';
+       // echo '<p>The most recent update was ' . $recentupdate . '</p>';
+
+       if ($recentupdate != $lastupdate) {
+         echo "<p>The newcast was updated " . $recentupdate . ".<br/>A new flash briefing is being published now.</p>";
+         programmatically_create_post();
+       }
+       else {
+         echo "<p>The newscast was last updated " . $lastupdate . ".</p>";
+       }
+
+       echo '</div>';
 
        // store the most recent datetime the newscast was updated in the website database
        update_option('lastupdated', $recentupdate);
-
-       // $date = $date->format('m/d/Y H:i:s A T');
-       echo '<p>The most recent update was ';
-       echo $recentupdate;
-       echo '</p>';
-       echo '</div>';
+       // update_option('lastupdated', 'tents');
    }
 
  /**
@@ -97,7 +103,7 @@ function programmatically_create_post()
 
     // $title = 'My Example Post';
     // Set the title to the most recent updated date time
-    $title = date("m/d/Y H:i:s", $recenttimestamp);
+    $title = 'Flash Briefing ' . date("m/d/Y H:i:s", $recenttimestamp);
 
     // 1605 is WJCT's 'News Flash' category id
     $category_ids = array (1605);
