@@ -3,7 +3,7 @@
    Plugin Name: WJCT Newscast Automator
    Plugin URI: https://github.com/RayHollister/WJCT-Newscast-Automator
    description: A plugin that automatically updates the WJCT Alexa Flash Briefing when the NPR One newscast has been uploaded.
-   Version: 0.11
+   Version: 0.12
    Author: Ray Hollister
    Author URI: https://rayhollister.com
    License:
@@ -36,7 +36,6 @@
      if (!wp_next_scheduled('WJCT_flash_briefing_automator_cron')) {
          wp_schedule_event(time(), 'every5minutes', 'WJCT_flash_briefing_automator_cron');
          // wp_schedule_event(time(), 'everyminute', 'WJCT_flash_briefing_automator_cron');
-
      }
  }
  // and make sure it's called whenever WordPress loads
@@ -59,16 +58,14 @@
      $recentupdate = date("m/d/Y h:i:s A T", $recenttimestamp);
 
      if ($recentupdate != $lastupdate) {
+         // store the most recent datetime the newscast was updated in the website database
+         update_option('lastupdated', $recentupdate);
+         // create a new flash briefing post
          programmatically_create_post();
+     } else {
+         // store the most recent datetime the newscast was updated in the website database
+         update_option('lastupdated', $recentupdate);
      }
-     // else {
-     //   // Just testing if the cron is running!
-     //   programmatically_create_post();
-     // }
-
-     // store the most recent datetime the newscast was updated in the website database
-     update_option('lastupdated', $recentupdate);
-     // update_option('lastupdated', 'tents');
  }
 
  // hook that function onto our scheduled event:
@@ -161,16 +158,17 @@
 
        if ($recentupdate != $lastupdate) {
            echo "<p>The newcast was updated " . $recentupdate . ".<br/>A new flash briefing is being published now.</p>";
+           // store the most recent datetime the newscast was updated in the website database
+           update_option('lastupdated', $recentupdate);
            programmatically_create_post();
        } else {
+           // store the most recent datetime the newscast was updated in the website database
+           update_option('lastupdated', $recentupdate);
            echo "<p>The newscast was last updated " . $lastupdate . ".</p>";
        }
 
        echo '</div>';
 
-       // store the most recent datetime the newscast was updated in the website database
-       update_option('lastupdated', $recentupdate);
-       // update_option('lastupdated', 'tents');
    }
 
  /**
@@ -206,7 +204,7 @@ function programmatically_create_post()
 
     // $title = 'My Example Post';
     // Set the title to the most recent updated date time
-    $title = 'Flash Briefing ' . date("m/d/Y H:i:s A", $recenttimestamp);
+    $title = 'Flash Briefing ' . date("m/d/Y h:i:s A", $recenttimestamp);
 
     // 1605 is WJCT's 'News Flash' category id
     $category_ids = array(1605);
