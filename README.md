@@ -15,7 +15,8 @@ With one action, two different platforms will receive the same content, with no 
 
 ### What's New
 
-* version 0.05 - Added cron job to automatically check for update every one minute (for testing). 
+* version 0.1 -  Set up cron to check every 5 minutes for new mp3. If mp3 is new, the post will be created. (This version is ready for pre-alpha testing.)
+* version 0.05 - Added cron job to automatically check for update every one minute (for testing).
 * version 0.04 - Added programmatically_create_post() and logic in WJCT_Latest_Newscast_widget_function() to check if newscast is new. programmatically_create_post() fires if newscast is new.
 * version 0.03 - Added get_option and update_option to store latest newscast update DateTime in WP Options table.
 * version 0.02 - Updated dashboard widget to show latest newscast update DateTime in local timezone.
