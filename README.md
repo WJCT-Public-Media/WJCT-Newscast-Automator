@@ -15,6 +15,7 @@ With one action, two different platforms will receive the same content, with no 
 
 ### What's New
 
+* ver 0.13 - Beautified the code.
 * version 0.12 - Changed date format in post title. Changed logic to include update database either way.
 * version 0.11 - Changed name to WJCT Newscast Automator because reasons.
 * version 0.1 -  Set up cron to check every 5 minutes for new mp3. If mp3 is new, the post will be created. (This version is ready for pre-alpha testing.)
@@ -27,6 +28,6 @@ With one action, two different platforms will receive the same content, with no 
 ## Roadmap
 
 * AP Style - I want to format the title of the post to AP Style data and time.
-* Editable UI - I want to add a form that stations can fill out with their mp3 file URL, their preferences for cron interval, title, slug, category and tags.
+* Settings Page - I want to add a form that stations can fill out with their mp3 file URL, their preferences for cron interval, title, slug, category and tags.
 * Instructions - I plan on putting together a guide on how to create an Alexa Flash Briefing, especially designed for public radio stations.
 * How to Listen Guide - I plan on writing up a customizable guide for stations to post on how listeners can subscribe to their station's flash briefing.
