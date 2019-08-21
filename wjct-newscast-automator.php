@@ -1,14 +1,14 @@
 <?php
    /*
-   Plugin Name: WJCT Alexa Flash Briefing Automator
-   Plugin URI: https://github.com/RayHollister/WJCT-Alexa-Flash-Briefing-Automator
+   Plugin Name: WJCT Newscast Automator
+   Plugin URI: https://github.com/RayHollister/WJCT-Newscast-Automator
    description: A plugin that automatically updates the WJCT Alexa Flash Briefing when the NPR One newscast has been uploaded.
-   Version: 0.1
+   Version: 0.11
    Author: Ray Hollister
    Author URI: https://rayhollister.com
    License:
    License URI:
-   Text Domain: wjct-alexa-flash-briefing-automator
+   Text Domain: wjct-newscast-automator
    */
 
 
