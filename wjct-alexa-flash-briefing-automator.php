@@ -34,8 +34,8 @@
  function cronstarter_activation()
  {
      if (!wp_next_scheduled('WJCT_flash_briefing_automator_cron')) {
-         // wp_schedule_event(time(), 'every5minutes', 'WJCT_flash_briefing_automator_cron');
-         wp_schedule_event(time(), 'everyminute', 'WJCT_flash_briefing_automator_cron');
+         wp_schedule_event(time(), 'every5minutes', 'WJCT_flash_briefing_automator_cron');
+         // wp_schedule_event(time(), 'everyminute', 'WJCT_flash_briefing_automator_cron');
 
      }
  }
@@ -61,10 +61,10 @@
      if ($recentupdate != $lastupdate) {
          programmatically_create_post();
      }
-     else {
-       // Just testing if the cron is running!
-       programmatically_create_post();
-     }
+     // else {
+     //   // Just testing if the cron is running!
+     //   programmatically_create_post();
+     // }
 
      // store the most recent datetime the newscast was updated in the website database
      update_option('lastupdated', $recentupdate);
