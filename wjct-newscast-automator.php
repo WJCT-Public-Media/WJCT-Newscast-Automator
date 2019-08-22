@@ -3,14 +3,34 @@
   Plugin Name: WJCT Newscast Automator
   Plugin URI: https://github.com/RayHollister/WJCT-Newscast-Automator
   description: A plugin that automatically updates the WJCT Alexa Flash Briefing when the NPR One newscast has been uploaded.
-  Version: 0.13
+  Version: 0.14
   Author: Ray Hollister
   Author URI: https://rayhollister.com
-  License:
-  License URI:
-  Text Domain: wjct-newscast-automator
+  License: GPLv2
+  License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  Copyright 2019 WJCT
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License, version 2, as
+  published by the Free Software Foundation.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
   */
 
+  // define the plugin director as a constant
+  define( 'WJCT_Newscast_Automator_Plugin_Dir', plugin_dir_path(__FILE__) );
+
+  // include the settings file
+  require_once( WJCT_Newscast_Automator_Plugin_Dir . 'settings.php' );
 
   // The URL of the MP3 file uploaded to NPR One.
   $mp3url = 'https://media.publicbroadcasting.net/wjct/newscast/newscast.mp3';
