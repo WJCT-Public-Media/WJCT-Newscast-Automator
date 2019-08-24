@@ -35,7 +35,6 @@ function wjct_newscast_options_page()
   <div>
   <?php screen_icon(); ?>
   <h2>WJCT Newscast Automator Settings</h2>
-  <p>This form doesn't do anything yet, except save the option settings.</p>
   <form method="post" action="options.php">
   <?php settings_fields( 'wjct_newscast_options_group' ); ?>
   <table class="form-table">
@@ -44,6 +43,11 @@ function wjct_newscast_options_page()
   <td><input style="width: 500px;" type="text" id="wjct_newscast_mp3url" name="wjct_newscast_mp3url" value="<?php echo get_option('wjct_newscast_mp3url'); ?>" />
     <p><em>What is your station's Newscast URL for NPR One? It is located in <a href="https://stationconnect.org/" target="_blank">StationConnect</a> under your station's call letters.</em></p>
   </td>
+  </tr>
+  <tr valign="top">
+    <th colspan="2">
+    <h3>Nothing below this line works, except for the 'Save Changes' button.</h3>
+  </th>
   </tr>
   <tr valign="top">
   <th scope="row"><label for="wjct_newscast_interval">Interval to run <br/>Newscast Automator</label></th>

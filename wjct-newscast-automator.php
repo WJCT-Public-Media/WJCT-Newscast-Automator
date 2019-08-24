@@ -3,7 +3,7 @@
   Plugin Name: WJCT Newscast Automator
   Plugin URI: https://github.com/RayHollister/WJCT-Newscast-Automator
   description: A plugin that automatically updates the WJCT Alexa Flash Briefing when the NPR One newscast has been uploaded.
-  Version: 0.14
+  Version: 0.15
   Author: Ray Hollister
   Author URI: https://rayhollister.com
   License: GPLv2
@@ -32,8 +32,12 @@
   // include the settings file
   require_once( WJCT_Newscast_Automator_Plugin_Dir . 'settings.php' );
 
+  // include the last-modified function
+  require_once( WJCT_Newscast_Automator_Plugin_Dir . 'last-modified.php' );
+
   // The URL of the MP3 file uploaded to NPR One.
-  $mp3url = 'https://media.publicbroadcasting.net/wjct/newscast/newscast.mp3';
+  // $mp3url = 'https://media.publicbroadcasting.net/wjct/newscast/newscast.mp3';
+  $mp3url = get_option( 'wjct_newscast_mp3url');
 
   // CRON JOB STARTS HERE
   // Credit Jay Versluis
@@ -42,18 +46,18 @@
   // unschedule event upon plugin deactivation
   function cronstarter_deactivate()
   {
-      // find out when the last event was scheduled
-      $timestamp = wp_next_scheduled('WJCT_flash_briefing_automator_cron');
-      // unschedule previous event if any
-      wp_unschedule_event($timestamp, 'WJCT_flash_briefing_automator_cron');
+    // find out when the last event was scheduled
+    $timestamp = wp_next_scheduled('WJCT_flash_briefing_automator_cron');
+    // unschedule previous event if any
+    wp_unschedule_event($timestamp, 'WJCT_flash_briefing_automator_cron');
   }
   register_deactivation_hook(__FILE__, 'cronstarter_deactivate');
   // create a scheduled event (if it does not exist already)
   function cronstarter_activation()
   {
       if (!wp_next_scheduled('WJCT_flash_briefing_automator_cron')) {
-          wp_schedule_event(time(), 'every5minutes', 'WJCT_flash_briefing_automator_cron');
-          // wp_schedule_event(time(), 'everyminute', 'WJCT_flash_briefing_automator_cron');
+          // wp_schedule_event(time(), 'every5minutes', 'WJCT_flash_briefing_automator_cron');
+          wp_schedule_event(time(), 'everyminute', 'WJCT_flash_briefing_automator_cron');
       }
   }
   // and make sure it's called whenever WordPress loads
@@ -66,23 +70,17 @@
       // get the datetime when the newscast was last updated
       $lastupdate = get_option('lastupdated');
 
-      $headers = get_headers($mp3url);
+      $recenttimestamp = remote_file_last_modified( $mp3url );
 
-      // Get the HTTP last modified header
-      $recentlastmod = substr($headers[7], 15, 29);
-      // convert string to Unix Timestamp
-      $recenttimestamp = strtotime($recentlastmod);
-      // format timestamp and convert to local timezone
-      $recentupdate = date("m/d/Y h:i:s A T", $recenttimestamp);
-
-      if ($recentupdate != $lastupdate) {
+      if ($recenttimestamp != $lastupdate) {
+          $recentupdate = date("m/d/Y h:i:s A T", $recenttimestamp);
           // store the most recent datetime the newscast was updated in the website database
-          update_option('lastupdated', $recentupdate);
+          update_option('lastupdated', $recenttimestamp);
           // create a new flash briefing post
           programmatically_create_post();
       } else {
           // store the most recent datetime the newscast was updated in the website database
-          update_option('lastupdated', $recentupdate);
+          update_option('lastupdated', $recenttimestamp);
       }
   }
 
@@ -107,8 +105,8 @@
   // add another interval
   function cron_add_fiveminutes($schedules)
   {
-      // Adds once every 5 minutes to the existing schedules.
-      $schedules['every5minutes'] = array(
+  // Adds once every 5 minutes to the existing schedules.
+  $schedules['every5minutes'] = array(
   'interval' => 300,
   'display' => __('Once Every 5 Minutes')
   );
@@ -119,12 +117,12 @@
   // add another interval
   function cron_add_fifteenminutes($schedules)
   {
-      // Adds once every 15 minutes to the existing schedules.
-      $schedules['every15minutes'] = array(
+  // Adds once every 15 minutes to the existing schedules.
+  $schedules['every15minutes'] = array(
   'interval' => 900,
   'display' => __('Once Every 15 Minute')
   );
-      return $schedules;
+  return $schedules;
   }
   add_filter('cron_schedules', 'cron_add_fifteenminutes');
 
@@ -153,34 +151,27 @@
       // get the datetime when the newscast was last updated
       $lastupdate = get_option('lastupdated');
 
-      $headers = get_headers($mp3url);
-
-      // Show the entire PHP server header of the file
-      // https://www.php.net/manual/en/function.get-headers.php
-      //
-      // print_r(get_headers($url));
-
-      // Show just the header that we need, the modified date/time
-      $recentlastmod = substr($headers[7], 15, 29);
-      // convert string to Unix Timestamp
-      $recenttimestamp = strtotime($recentlastmod);
-      // format timestamp and convert to local timezone
-      $recentupdate = date("m/d/Y h:i:s A T", $recenttimestamp);
+      $recenttimestamp = remote_file_last_modified( $mp3url );
 
       // echo '<p>The last update was ' . $lastupdate . '</p>';
       // echo '<p>The most recent update was ' . $recentupdate . '</p>';
 
-      if ($recentupdate != $lastupdate) {
+      // format timestamp and convert to local timezone
+      $recentupdate = date("m/d/Y h:i:s A T", $recenttimestamp);
+
+      if ($recenttimestamp != $lastupdate) {
+
           echo "<p>The newcast was updated " . $recentupdate . ".<br/>A new flash briefing is being published now.</p>";
+          echo "<p>The timestamps are " . $recenttimestamp . " (new) and " . $lastupdate . " (old)</p>";
           // store the most recent datetime the newscast was updated in the website database
-          update_option('lastupdated', $recentupdate);
+          update_option('lastupdated', $recenttimestamp);
           programmatically_create_post();
       } else {
           // store the most recent datetime the newscast was updated in the website database
-          update_option('lastupdated', $recentupdate);
-          echo "<p>The newscast was last updated " . $lastupdate . ".</p>";
+          update_option('lastupdated', $recenttimestamp);
+          echo "<p>The newscast was last updated " . $recentupdate . ".</p>";
+          echo "<p>The timestamps are " . $recenttimestamp . " (new) and " . $lastupdate . " (old)</p>";
       }
-
       echo '</div>';
   }
 
@@ -196,11 +187,7 @@
   {
       global $mp3url;
 
-      $headers = get_headers($mp3url);
-      // Show just the header that we need, the modified date/time
-      $recentlastmod = substr($headers[7], 15, 29);
-      // convert string to Unix Timestamp
-      $recenttimestamp = strtotime($recentlastmod);
+      $recenttimestamp = remote_file_last_modified( $mp3url );
 
       // Initialize the page ID to -1. This indicates no action has been taken.
       $post_id = -1;

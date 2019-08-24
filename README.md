@@ -15,6 +15,8 @@ With one action, two different platforms will receive the same content, with no 
 
 ### What's New
 
+* version 0.15 - Added last-modified.php and fixed code to get lastmodified Timestamp correctly.
+* version 0.141 - Enabled MP3 URL settings option.
 * version 0.14 - Updated license, added copy of license to text, added settings option menu (currently not functional)   
 * version 0.13 - Beautified the code.
 * version 0.12 - Changed date format in post title. Changed logic to include update database either way.
