@@ -3,7 +3,7 @@
   Plugin Name: WJCT Newscast Automator
   Plugin URI: https://github.com/RayHollister/WJCT-Newscast-Automator
   description: A plugin that automatically updates the WJCT Alexa Flash Briefing when the NPR One newscast has been uploaded.
-  Version: 0.15
+  Version: 0.2
   Author: Ray Hollister
   Author URI: https://rayhollister.com
   License: GPLv2
@@ -63,6 +63,37 @@
   // and make sure it's called whenever WordPress loads
   add_action('wp', 'cronstarter_activation');
 
+  // this function unpublishes the existing newscasts
+  function delete_old_newscasts() {
+     for( $i = 0; $i < 1; $i++ ) {     // Runs this loop 1 time
+         $args = array(
+            'post_status' => 'published',
+            'cat'         => 1605,        // Use Category ID here.
+            'posts_per_page' => 100,    // Lets just do 100 at a time so we don't blow up your server
+            'no_found_rows'  => true,   // We don't need to paginate.
+            'update_post_meta_cache' => false,  // We don't need post meta either.
+     );
+      $posts = get_posts( $args );
+      if ( !$posts ) return;             // Breaks out of the function if there are no posts.
+          foreach ( $posts as $post ) {
+          print_r( old_newscasts_change_status( $post->ID ) );
+
+          }
+      }
+  }
+
+   function old_newscasts_change_status( $post_id ) {
+      $updated_post = array();
+      $updated_post['ID'] = (int) $post_id;
+      $updated_post['post_status'] = 'trash';
+
+      wp_update_post( $updated_post );
+        //  return $post_id .' has been deleted <br/>';
+      }
+
+  // End of delete old newscasts funtion
+
+
   // here's the function we'd like to call with our cron job
   function newscast_checker()
   {
@@ -76,6 +107,8 @@
           $recentupdate = date("m/d/Y h:i:s A T", $recenttimestamp);
           // store the most recent datetime the newscast was updated in the website database
           update_option('lastupdated', $recenttimestamp);
+          // put the old newscasts in the trash
+          delete_old_newscasts();
           // create a new flash briefing post
           programmatically_create_post();
       } else {
@@ -165,12 +198,14 @@
           echo "<p>The timestamps are " . $recenttimestamp . " (new) and " . $lastupdate . " (old)</p>";
           // store the most recent datetime the newscast was updated in the website database
           update_option('lastupdated', $recenttimestamp);
+          delete_old_newscasts();
           programmatically_create_post();
       } else {
           // store the most recent datetime the newscast was updated in the website database
           update_option('lastupdated', $recenttimestamp);
-          echo "<p>The newscast was last updated " . $recentupdate . ".</p>";
-          echo "<p>The timestamps are " . $recenttimestamp . " (new) and " . $lastupdate . " (old)</p>";
+          // echo "<p>The newscast was last updated " . $recentupdate . ".</p>";
+          echo "<p>The newscast was last updated <a href='/" . $recenttimestamp . "' target='_blank'>" . $recentupdate  . "</a>.</p>";
+          // echo "<p>The timestamps are " . $recenttimestamp . " (new) and " . $lastupdate . " (old)</p>";
       }
       echo '</div>';
   }
