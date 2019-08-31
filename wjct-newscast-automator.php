@@ -3,7 +3,7 @@
   Plugin Name: WJCT Newscast Automator
   Plugin URI: https://github.com/RayHollister/WJCT-Newscast-Automator
   description: A plugin that automatically updates the WJCT Alexa Flash Briefing when the NPR One newscast has been uploaded.
-  Version: 0.2
+  Version: 0.21
   Author: Ray Hollister
   Author URI: https://rayhollister.com
   License: GPLv2
@@ -39,30 +39,6 @@
   // $mp3url = 'https://media.publicbroadcasting.net/wjct/newscast/newscast.mp3';
   $mp3url = get_option( 'wjct_newscast_mp3url');
 
-  // CRON JOB STARTS HERE
-  // Credit Jay Versluis
-  // https://bit.ly/2HgDfUW
-
-  // unschedule event upon plugin deactivation
-  function cronstarter_deactivate()
-  {
-    // find out when the last event was scheduled
-    $timestamp = wp_next_scheduled('WJCT_flash_briefing_automator_cron');
-    // unschedule previous event if any
-    wp_unschedule_event($timestamp, 'WJCT_flash_briefing_automator_cron');
-  }
-  register_deactivation_hook(__FILE__, 'cronstarter_deactivate');
-  // create a scheduled event (if it does not exist already)
-  function cronstarter_activation()
-  {
-      if (!wp_next_scheduled('WJCT_flash_briefing_automator_cron')) {
-          // wp_schedule_event(time(), 'every5minutes', 'WJCT_flash_briefing_automator_cron');
-          wp_schedule_event(time(), 'everyminute', 'WJCT_flash_briefing_automator_cron');
-      }
-  }
-  // and make sure it's called whenever WordPress loads
-  add_action('wp', 'cronstarter_activation');
-
   // this function unpublishes the existing newscasts
   function delete_old_newscasts() {
      for( $i = 0; $i < 1; $i++ ) {     // Runs this loop 1 time
@@ -93,6 +69,91 @@
 
   // End of delete old newscasts funtion
 
+  // A function used to programmatically create a post in WordPress.
+  // The slug, author ID, and title are defined within the context of the function.
+  //
+  // @returns -1 if the post was never created, -2 if a post with the same title exists, or the ID
+  // of the post if successful.
+  //
+  // Credit: Tom McFarlin https://tommcfarlin.com/programmatically-create-a-post-in-wordpress/#code
+
+  function programmatically_create_post()
+  {
+      global $mp3url;
+
+      $recenttimestamp = remote_file_last_modified( $mp3url );
+      // Convert numeric to string
+      $recenttimestamp = strval($recenttimestamp);
+
+      // Initialize the page ID to -1. This indicates no action has been taken.
+      $post_id = -1;
+
+      // Setup the author, slug, category and title for the post
+      // User ID 636 is the generic 'WJCT' User
+      $author_id = 636;
+
+      // set the slug to the Unix Timestamp
+      $slug = $recenttimestamp;
+
+      // Set the title to the most recent updated date time
+      // $title = 'My Example Post';
+      $title = 'Flash Briefing ' . date("m/d/Y h:i:s A", $recenttimestamp);
+
+      // 1605 is WJCT's 'News Flash' category id
+      $category_ids = array(1605);
+
+      // This sets the content of the post to the embed link for the mp3.
+      $post_content = '[embed]' . $mp3url . '[/embed]';
+
+      // If the page doesn't already exist, then create it
+      if (null == get_page_by_title($title)) {
+
+          // Set the post ID so that we know the post was created successfully
+          $post_id = wp_insert_post(
+              array(
+                'comment_status'	=>	'closed',
+                'ping_status'	=>	'closed',
+                'post_author'	=>	$author_id,
+                'post_content'	=>	$post_content,
+                'post_name'	=>	$slug,
+                'post_title'	=>	$title,
+                'post_category'	=>	$category_ids,
+                'post_status'	=>	'publish',
+                'post_type' =>	'post'
+                )
+              );
+      // Otherwise, we'll stop
+      } else {
+
+  // Arbitrarily use -2 to indicate that the page with the title already exists
+          $post_id = -2;
+      } // end if
+  } // end programmatically_create_post
+
+
+  // CRON JOB STARTS HERE
+  // Credit Jay Versluis
+  // https://bit.ly/2HgDfUW
+
+  // unschedule event upon plugin deactivation
+  function cronstarter_deactivate()
+  {
+    // find out when the last event was scheduled
+    $timestamp = wp_next_scheduled('WJCT_flash_briefing_automator_cron');
+    // unschedule previous event if any
+    wp_unschedule_event($timestamp, 'WJCT_flash_briefing_automator_cron');
+  }
+  register_deactivation_hook(__FILE__, 'cronstarter_deactivate');
+  // create a scheduled event (if it does not exist already)
+  function cronstarter_activation()
+  {
+      if (!wp_next_scheduled('WJCT_flash_briefing_automator_cron')) {
+          // wp_schedule_event(time(), 'every5minutes', 'WJCT_flash_briefing_automator_cron');
+          wp_schedule_event(time(), 'everyminute', 'WJCT_flash_briefing_automator_cron');
+      }
+  }
+  // and make sure it's called whenever WordPress loads
+  add_action('wp', 'cronstarter_activation');
 
   // here's the function we'd like to call with our cron job
   function newscast_checker()
@@ -102,18 +163,20 @@
       $lastupdate = get_option('lastupdated');
 
       $recenttimestamp = remote_file_last_modified( $mp3url );
+      // Convert numeric to string
+      $recenttimestamp = strval($recenttimestamp);
 
       if ($recenttimestamp != $lastupdate) {
           $recentupdate = date("m/d/Y h:i:s A T", $recenttimestamp);
-          // store the most recent datetime the newscast was updated in the website database
-          update_option('lastupdated', $recenttimestamp);
           // put the old newscasts in the trash
           delete_old_newscasts();
           // create a new flash briefing post
           programmatically_create_post();
-      } else {
           // store the most recent datetime the newscast was updated in the website database
           update_option('lastupdated', $recenttimestamp);
+      } else {
+          // store the most recent datetime the newscast was updated in the website database
+          // update_option('lastupdated', $recenttimestamp);
       }
   }
 
@@ -178,93 +241,39 @@
 
   function WJCT_Latest_Newscast_widget_function()
   {
-      global $mp3url;
+      // global $mp3url;
+
+      newscast_checker();
+
       echo '<div>';
 
-      // get the datetime when the newscast was last updated
-      $lastupdate = get_option('lastupdated');
-
-      $recenttimestamp = remote_file_last_modified( $mp3url );
-
-      // echo '<p>The last update was ' . $lastupdate . '</p>';
-      // echo '<p>The most recent update was ' . $recentupdate . '</p>';
-
-      // format timestamp and convert to local timezone
-      $recentupdate = date("m/d/Y h:i:s A T", $recenttimestamp);
-
-      if ($recenttimestamp != $lastupdate) {
-
-          echo "<p>The newcast was updated " . $recentupdate . ".<br/>A new flash briefing is being published now.</p>";
-          echo "<p>The timestamps are " . $recenttimestamp . " (new) and " . $lastupdate . " (old)</p>";
-          // store the most recent datetime the newscast was updated in the website database
-          update_option('lastupdated', $recenttimestamp);
-          delete_old_newscasts();
-          programmatically_create_post();
-      } else {
-          // store the most recent datetime the newscast was updated in the website database
-          update_option('lastupdated', $recenttimestamp);
-          // echo "<p>The newscast was last updated " . $recentupdate . ".</p>";
-          echo "<p>The newscast was last updated <a href='/" . $recenttimestamp . "' target='_blank'>" . $recentupdate  . "</a>.</p>";
-          // echo "<p>The timestamps are " . $recenttimestamp . " (new) and " . $lastupdate . " (old)</p>";
-      }
+      // // get the datetime when the newscast was last updated
+      // $lastupdate = get_option('lastupdated');
+      //
+      // $recenttimestamp = remote_file_last_modified( $mp3url );
+      // // Convert numeric to string
+      // $recenttimestamp = strval($recenttimestamp);
+      //
+      // // echo '<p>The last update was ' . $lastupdate . '</p>';
+      // // echo '<p>The most recent update was ' . $recentupdate . '</p>';
+      //
+      // // format timestamp and convert to local timezone
+      // $recentupdate = date("m/d/Y h:i:s A T", $recenttimestamp);
+      //
+      // if ($recenttimestamp != $lastupdate) {
+      //
+      //     echo "<p>The newcast was updated " . $recentupdate . ".<br/>A new flash briefing is being published now.</p>";
+      //     echo "<p>The timestamps are " . $recenttimestamp . " (new) and " . $lastupdate . " (old)</p>";
+      //     // store the most recent datetime the newscast was updated in the website database
+      //     update_option('lastupdated', $recenttimestamp);
+      //     // delete_old_newscasts();
+      //     // programmatically_create_post();
+      // } else {
+      //     // store the most recent datetime the newscast was updated in the website database
+      //     update_option('lastupdated', $recenttimestamp);
+      //     // echo "<p>The newscast was last updated " . $recentupdate . ".</p>";
+      //     echo "<p>The newscast was last updated <a href='/" . $recenttimestamp . "' target='_blank'>" . $recentupdate  . "</a>.</p>";
+      //     // echo "<p>The timestamps are " . $recenttimestamp . " (new) and " . $lastupdate . " (old)</p>";
+      // }
       echo '</div>';
   }
-
-  // A function used to programmatically create a post in WordPress.
-  // The slug, author ID, and title are defined within the context of the function.
-  //
-  // @returns -1 if the post was never created, -2 if a post with the same title exists, or the ID
-  // of the post if successful.
-  //
-  // Credit: Tom McFarlin https://tommcfarlin.com/programmatically-create-a-post-in-wordpress/#code
-
-  function programmatically_create_post()
-  {
-      global $mp3url;
-
-      $recenttimestamp = remote_file_last_modified( $mp3url );
-
-      // Initialize the page ID to -1. This indicates no action has been taken.
-      $post_id = -1;
-
-      // Setup the author, slug, category and title for the post
-      // User ID 636 is the generic 'WJCT' User
-      $author_id = 636;
-
-      // set the slug to the Unix Timestamp
-      $slug = $recenttimestamp;
-
-      // Set the title to the most recent updated date time
-      // $title = 'My Example Post';
-      $title = 'Flash Briefing ' . date("m/d/Y h:i:s A", $recenttimestamp);
-
-      // 1605 is WJCT's 'News Flash' category id
-      $category_ids = array(1605);
-
-      // This sets the content of the post to the embed link for the mp3.
-      $post_content = '[embed]' . $mp3url . '[/embed]';
-
-      // If the page doesn't already exist, then create it
-      if (null == get_page_by_title($title)) {
-
-          // Set the post ID so that we know the post was created successfully
-          $post_id = wp_insert_post(
-              array(
-                'comment_status'	=>	'closed',
-                'ping_status'	=>	'closed',
-                'post_author'	=>	$author_id,
-                'post_content'	=>	$post_content,
-                'post_name'	=>	$slug,
-                'post_title'	=>	$title,
-                'post_category'	=>	$category_ids,
-                'post_status'	=>	'publish',
-                'post_type' =>	'post'
-                )
-              );
-      // Otherwise, we'll stop
-      } else {
-
-  // Arbitrarily use -2 to indicate that the page with the title already exists
-          $post_id = -2;
-      } // end if
-  } // end programmatically_create_post

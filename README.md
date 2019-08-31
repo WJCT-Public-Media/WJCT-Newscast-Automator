@@ -15,7 +15,8 @@ With one action, two different platforms will receive the same content, with no 
 
 ### What's New
 
-* version 0.2 - Added delete_old_newscasts(). Now the previous newscasts will go to the trash automatically before the new one is posted. It's a dirty fix, but at least there's only one newscast published at a time. 
+* version 0.21 - Disabled dashboard widget display to focus debugging on newscast_checker(). Will re-enable in future version.
+* version 0.2 - Added delete_old_newscasts(). Now the previous newscasts will go to the trash automatically before the new one is posted.
 * version 0.15 - Added last-modified.php and fixed code to get lastmodified Timestamp correctly.
 * version 0.141 - Enabled MP3 URL settings option.
 * version 0.14 - Updated license, added copy of license to text, added settings option menu (currently not functional)   
